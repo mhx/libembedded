@@ -24,11 +24,15 @@
 
 #include <functional>
 #include <new>
-#include <stdexcept>
 #include <type_traits>
 #include <utility>
 
 #include "config.h"
+
+#if LIBEMB_HAS_EXCEPTIONS
+#include <stdexcept>
+#endif
+
 #include "type_traits.h"
 
 namespace embedded {
