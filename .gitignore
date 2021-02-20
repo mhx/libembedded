@@ -1,0 +1,5 @@
+/@*
+/tmp/
+/build*/
+*.log
+/.gdb_history
