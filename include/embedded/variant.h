@@ -22,7 +22,15 @@
 
 #pragma once
 
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_suppress=Pe540
+#endif
+
 #include "mpark/variant.hpp"
+
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_default=Pe540
+#endif
 
 namespace embedded {
 
