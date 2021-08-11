@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <cstddef>
+#include <exception>
 #include <functional>
 #include <new>
 #include <type_traits>
@@ -232,9 +234,8 @@ class function final : private detail::function_traits<Signature> {
     return *this;
   }
 
-  template <
-      typename M, typename C,
-      typename = decltype(function(std::mem_fn(static_cast<M C::*>(nullptr))))>
+  template <typename M, typename C,
+            typename = decltype(std::mem_fn(static_cast<M C::*>(nullptr)))>
   function(M C::*pm) noexcept
       : function() {
     if (pm) {
