@@ -52,7 +52,7 @@ add_subdirectory(
 
 include(GoogleTest)
 
-add_executable(libembedded_test function.cpp move_wrapper.cpp)
+add_executable(libembedded_test function.cpp move_wrapper.cpp lock_guard.cpp)
 
 target_link_libraries(libembedded_test gtest_main)
 
