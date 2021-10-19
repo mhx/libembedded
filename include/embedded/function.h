@@ -84,13 +84,13 @@ class vtbl<Return(Args...)> {
   }
 
   template <typename T>
-  static void vt_proc(oper op, storage_t dst, storage_t src) noexcept {
+  static void vt_proc(oper op, storage_t src, storage_t dst) noexcept {
     switch (op) {
     case oper::move:
       ::new (dst) T{std::move(*static_cast<T*>(src))};
       // fallthrough
     case oper::destroy:
-      static_cast<T*>(dst)->~T();
+      static_cast<T*>(src)->~T();
       break;
     }
   }
@@ -219,8 +219,8 @@ class function final : private detail::function_traits<Signature> {
   function(function&& other) noexcept
       : vtbl_(other.vtbl_) {
     other.vtbl_ = &empty_vtbl::value;
-    vtbl_->proc(detail::oper::move, std::addressof(storage_),
-                std::addressof(other.storage_));
+    vtbl_->proc(detail::oper::move, std::addressof(other.storage_),
+                std::addressof(storage_));
   }
 
   function& operator=(function&& other) noexcept {
