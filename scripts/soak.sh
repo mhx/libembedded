@@ -8,11 +8,16 @@ export SOAKING=1
 
 declare -a options=("" "-fno-exceptions -fno-rtti" "-fno-exceptions -fno-rtti -m32")
 
-for compiler in g++ g++-10 clang++ clang++-11; do
+COMPILERS=$({ compgen -c g++ & compgen -c clang++; } | sort | uniq)
+
+for compiler in $COMPILERS; do
     for standard in c++11 c++14 c++17 c++2a; do
         for opts in "${options[@]}"; do
-            CXX=$compiler CXXFLAGS="-std=$standard $opts" cmake .. -GNinja
-            ninja && ninja test && ninja clean && rm -f CMakeCache.txt
+            CXX=$compiler CXXFLAGS="-std=$standard $opts -Wall -Wextra -Werror -pedantic" cmake .. -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -GNinja
+            ninja
+            ninja test
+            ninja clean
+            rm -f CMakeCache.txt
         done
     done
 done
