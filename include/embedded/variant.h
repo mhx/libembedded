@@ -22,6 +22,7 @@
 
 #pragma once
 
+// clang-format off
 #ifdef __IAR_SYSTEMS_ICC__
 #pragma diag_suppress=Pe540
 #endif
@@ -31,6 +32,7 @@
 #ifdef __IAR_SYSTEMS_ICC__
 #pragma diag_default=Pe540
 #endif
+// clang-format on
 
 namespace embedded {
 
