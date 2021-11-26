@@ -53,8 +53,8 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
 
 include(GoogleTest)
 
-add_executable(libembedded_test function.cpp move_wrapper.cpp lock_guard.cpp
-                                typelist.cpp varint.cpp)
+add_executable(libembedded_test circular_buffer_adapter.cpp function.cpp move_wrapper.cpp
+                                lock_guard.cpp typelist.cpp varint.cpp)
 
 target_link_libraries(libembedded_test gtest_main)
 
