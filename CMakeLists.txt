@@ -30,12 +30,12 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
    add_compile_options(-fcolor-diagnostics)
 endif()
 
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif()
+
 if(DEFINED ENV{SOAKING})
-  message("\n======= ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS} =======\n")
-else()
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    add_compile_options(-Wall -Wextra -pedantic -Werror)
-  endif()
+  message("\n======= ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS} [${CMAKE_BUILD_TYPE}] =======\n")
 endif()
 
 include_directories(include)
