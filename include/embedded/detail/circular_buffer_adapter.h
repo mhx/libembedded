@@ -163,7 +163,7 @@ class cba_iterator {
   cba_iterator& operator-=(difference_type n) {
     if (n > 0) {
       assert(n <= index());
-      it_ = adapter_->sub(it_ ? it_ : adapter_->last_, n);
+      it_ = adapter_->sub(realiter(), n);
     } else if (n < 0) {
       *this += -n;
     }
@@ -190,6 +190,8 @@ class cba_iterator {
   difference_type index() const {
     return it_ ? adapter_->index(it_) : adapter_->size();
   }
+
+  pointer realiter() const { return it_ ? it_ : adapter_->last_; }
 
   circular_buffer_adapter<T> const* adapter_{nullptr};
   pointer it_{nullptr};

@@ -214,7 +214,7 @@ class circular_buffer_adapter {
 
   template <typename Traits>
   size_type raw_index(detail::cba_iterator<T, Traits> const& it) const {
-    return std::distance(begin_, it.it_ ? it.it_ : last_);
+    return std::distance(begin_, it.realiter());
   }
 
  private:
