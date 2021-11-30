@@ -345,6 +345,56 @@ TEST(circular_buffer_adapter, create_destroy) {
     cba.emplace_back(1);
     cba.emplace_back(2);
     cba.emplace_back(3);
+    cba.pop_back(0);
+    EXPECT_TRUE(testdata::expect_ops({CONSTRUCT, CONSTRUCT, CONSTRUCT}));
+    cba.pop_back(1);
+    EXPECT_TRUE(testdata::expect_ops({DESTRUCT}));
+    EXPECT_EQ(cba.front().x_, 1);
+    EXPECT_EQ(cba.back().x_, 2);
+    cba.pop_front(0);
+    EXPECT_TRUE(testdata::expect_ops({}));
+    cba.pop_front(1);
+    EXPECT_TRUE(testdata::expect_ops({DESTRUCT}));
+    EXPECT_EQ(cba.front().x_, 2);
+    EXPECT_EQ(cba.back().x_, 2);
+    cba.emplace_front(4);
+    cba.emplace_front(5);
+    EXPECT_TRUE(testdata::expect_ops({CONSTRUCT, CONSTRUCT}));
+    EXPECT_TRUE(cba.full());
+    cba.pop_front(2);
+    EXPECT_TRUE(testdata::expect_ops({DESTRUCT, DESTRUCT}));
+    EXPECT_EQ(cba.size(), 1);
+    EXPECT_EQ(cba.front().x_, 2);
+    cba.emplace_back(6);
+    cba.emplace_back(7);
+    EXPECT_TRUE(testdata::expect_ops({CONSTRUCT, CONSTRUCT}));
+    EXPECT_TRUE(cba.full());
+    cba.pop_back(2);
+    EXPECT_TRUE(testdata::expect_ops({DESTRUCT, DESTRUCT}));
+    EXPECT_EQ(cba.size(), 1);
+    EXPECT_EQ(cba.front().x_, 2);
+    cba.emplace_front(8);
+    cba.emplace_front(9);
+    EXPECT_TRUE(testdata::expect_ops({CONSTRUCT, CONSTRUCT}));
+    EXPECT_TRUE(cba.full());
+    cba.pop_back(3);
+    EXPECT_TRUE(testdata::expect_ops({DESTRUCT, DESTRUCT, DESTRUCT}));
+    EXPECT_TRUE(cba.empty());
+    cba.emplace_back(10);
+    cba.emplace_back(11);
+    cba.emplace_back(12);
+    EXPECT_TRUE(testdata::expect_ops({CONSTRUCT, CONSTRUCT, CONSTRUCT}));
+    cba.pop_front(3);
+    EXPECT_TRUE(testdata::expect_ops({DESTRUCT, DESTRUCT, DESTRUCT}));
+    EXPECT_TRUE(cba.empty());
+
+    EXPECT_EQ(0, testdata::alive());
+    cba.clear();
+    EXPECT_TRUE(testdata::expect_ops({}));
+
+    cba.emplace_back(1);
+    cba.emplace_back(2);
+    cba.emplace_back(3);
     cba.pop_front();
     cba.emplace_back(4);
     EXPECT_TRUE(testdata::expect_ops(
@@ -1059,14 +1109,43 @@ TYPED_TEST(copy_in_out_fixture, copy_in_out) {
   //                             b
   //                 e
 
+  out.resize(7);
+  cba.copy_out(cba.begin(), cba.end(), out.data());
+
+  EXPECT_EQ(7, cba.size());
+  EXPECT_EQ(std::vector<TypeParam>({15, 16, 17, 19, 20, 21, 22}), out);
+
+  in.resize(4);
+  std::iota(in.begin(), in.end(), 23);
+
+  cba.copy_in(cba.begin() + 1, cba.end() - 2, in.data());
+
+  // 25  26  21  22              15  23  24
+  // --  --  --  --  --  --  --  --  --  --
+  //                             b
+  //                 e
+
+  EXPECT_EQ(7, cba.size());
+
   out.resize(3);
   cba.copy_out_front(out.data(), out.size());
 
+  // 25  26  21  22
+  // --  --  --  --  --  --  --  --  --  --
+  // b
+  //                 e
+
   EXPECT_EQ(4, cba.size());
-  EXPECT_EQ(std::vector<TypeParam>({15, 16, 17}), out);
+  EXPECT_EQ(std::vector<TypeParam>({15, 23, 24}), out);
 
   EXPECT_EQ(0, cba.raw_index(cba.begin()));
   EXPECT_EQ(4, cba.raw_index(cba.end()));
+
+  out.resize(2);
+  cba.copy_out(cba.begin() + 1, cba.end() - 1, out.data());
+
+  EXPECT_EQ(4, cba.size());
+  EXPECT_EQ(std::vector<TypeParam>({26, 21}), out);
 }
 
 #if LIBEMB_HAS_EXCEPTIONS

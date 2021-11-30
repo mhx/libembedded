@@ -119,8 +119,9 @@ class circular_buffer_adapter {
   }
 
   void clear() {
-    clear_impl<T>();
+    destroy<T>(first_, size_);
     first_ = last_ = begin_;
+    size_ = 0;
   }
 
   bool empty() const { return size_ == 0; }
@@ -184,6 +185,13 @@ class circular_buffer_adapter {
     --size_;
   }
 
+  void pop_front(size_type count) {
+    assert(count <= size());
+    destroy<T>(first_, count);
+    first_ = add(first_, count);
+    size_ -= count;
+  }
+
   void push_back(const value_type& value) {
     assert(!full());
     new (last_) value_type(value);
@@ -212,6 +220,13 @@ class circular_buffer_adapter {
     dec(last_);
     destroy(last_);
     --size_;
+  }
+
+  void pop_back(size_type count) {
+    assert(count <= size());
+    last_ = sub(last_, count);
+    destroy<T>(last_, count);
+    size_ -= count;
   }
 
   template <typename Traits>
@@ -265,9 +280,31 @@ class circular_buffer_adapter {
     last_ = new_last;
   }
 
+  template <typename U,
+            typename std::enable_if<std::is_trivial<U>::value &&
+                                        std::is_same<U, value_type>::value,
+                                    bool>::type = true>
+  void copy_in(iterator first, iterator last, U const* data) {
+    assert(begin() <= first);
+    assert(first <= last);
+    assert(last <= end());
+    copy_in(first.it_, data, last - first);
+  }
+
+  template <typename U,
+            typename std::enable_if<std::is_trivial<U>::value &&
+                                        std::is_same<U, value_type>::value,
+                                    bool>::type = true>
+  void copy_out(const_iterator first, const_iterator last, U* data) const {
+    assert(begin() <= first);
+    assert(first <= last);
+    assert(last <= end());
+    copy_out(data, first.it_, last - first);
+  }
+
  private:
-  template <typename Func, typename SrcType>
-  void copy_in_impl(pointer dest, SrcType* src, size_type count,
+  template <typename Func>
+  void copy_in_impl(pointer dest, const_pointer src, size_type count,
                     Func const& copy_fn) {
     if (dest + count <= end_) {
       copy_fn(dest, src, count);
@@ -280,12 +317,13 @@ class circular_buffer_adapter {
   }
 
   template <typename Func>
-  void copy_out_impl(pointer dest, pointer src, size_type count,
-                     Func const& copy_fn) {
+  void copy_out_impl(pointer dest, const_pointer src, size_type count,
+                     Func const& copy_fn) const {
     if (src + count <= end_) {
       copy_fn(dest, src, count);
     } else {
-      size_type const count_a = std::distance(src, end_);
+      size_type const count_a =
+          std::distance(src, const_cast<const_pointer>(end_));
       size_type const count_b = count - count_a;
       copy_fn(dest, src, count_a);
       copy_fn(dest + count_a, begin_, count_b);
@@ -299,24 +337,24 @@ class circular_buffer_adapter {
                  });
   }
 
-  void copy_out(pointer dest, pointer src, size_type count) {
+  void copy_out(pointer dest, const_pointer src, size_type count) const {
     copy_out_impl(dest, src, count,
-                  [](pointer dest, pointer src, size_type count) {
+                  [](pointer dest, const_pointer src, size_type count) {
                     std::memcpy(dest, src, sizeof(*dest) * count);
                   });
   }
 
   template <typename U, typename std::enable_if<std::is_trivial<U>::value,
                                                 bool>::type = true>
-  void clear_impl() {
-    size_ = 0;
-  }
+  void destroy(pointer, size_type) {}
 
   template <typename U, typename std::enable_if<!std::is_trivial<U>::value,
                                                 bool>::type = true>
-  void clear_impl() {
-    while (!empty()) {
-      pop_front();
+  void destroy(pointer first, size_type count) {
+    while (count > 0) {
+      destroy(first);
+      inc(first);
+      --count;
     }
   }
 
