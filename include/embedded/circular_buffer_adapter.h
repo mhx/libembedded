@@ -75,8 +75,7 @@ class circular_buffer_adapter {
   friend iterator;
   friend const_iterator;
 
-  circular_buffer_adapter()
-      : circular_buffer_adapter(nullptr, 0) {}
+  circular_buffer_adapter() = default;
 
   circular_buffer_adapter(circular_buffer_adapter&&) = default;
   circular_buffer_adapter& operator=(circular_buffer_adapter&&) = default;
@@ -97,7 +96,7 @@ class circular_buffer_adapter {
       : begin_{begin}
       , end_{end}
       , first_{first}
-      , last_{add_no_checks(first, item_count)}
+      , last_{add(first, item_count)}
       , size_{item_count} {
     assert(size_ <= capacity());
   }
@@ -389,10 +388,6 @@ class circular_buffer_adapter {
   pointer add(pointer p, difference_type n) const {
     assert(p != nullptr);
     assert(n >= 0);
-    return add_no_checks(p, n);
-  }
-
-  pointer add_no_checks(pointer p, difference_type n) const {
     return p + (n < std::distance(p, end_) ? n : wrap_around(n));
   }
 
@@ -409,11 +404,11 @@ class circular_buffer_adapter {
                       : std::distance(first_, p);
   }
 
-  pointer begin_;
-  pointer end_;
-  pointer first_;
-  pointer last_;
-  size_type size_;
+  pointer begin_{nullptr};
+  pointer end_{nullptr};
+  pointer first_{nullptr};
+  pointer last_{nullptr};
+  size_type size_{0};
 };
 
 } // namespace embedded
