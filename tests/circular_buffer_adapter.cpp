@@ -180,12 +180,14 @@ TEST(circular_buffer_adapter, basic) {
 
   EXPECT_EQ(3, cba.capacity());
   EXPECT_EQ(0, cba.size());
+  EXPECT_EQ(3, cba.remaining());
   EXPECT_TRUE(cba.empty());
 
   cba.push_back(7);
 
   EXPECT_EQ(3, cba.capacity());
   EXPECT_EQ(1, cba.size());
+  EXPECT_EQ(2, cba.remaining());
   EXPECT_EQ(7, cba.front());
   EXPECT_EQ(7, cba.back());
 
@@ -208,6 +210,7 @@ TEST(circular_buffer_adapter, basic) {
   std::fill_n(std::back_inserter(cba), cba.capacity(), 42);
 
   EXPECT_EQ(3, cba.size());
+  EXPECT_EQ(0, cba.remaining());
   EXPECT_EQ(42, cba.front());
   EXPECT_EQ(42, cba.back());
 

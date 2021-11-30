@@ -127,6 +127,7 @@ class circular_buffer_adapter {
 
   size_type capacity() const { return std::distance(begin_, end_); }
   size_type size() const { return size_; }
+  size_type remaining() const { return capacity() - size_; }
 
   reference front() const {
     assert(!empty());
