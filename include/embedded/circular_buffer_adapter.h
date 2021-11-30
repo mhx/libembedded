@@ -23,6 +23,7 @@
 #pragma once
 
 #include <cassert>
+#include <cstring>
 
 #include "config.h"
 
@@ -218,7 +219,93 @@ class circular_buffer_adapter {
     return std::distance(begin_, it.realiter());
   }
 
+  template <typename U,
+            typename std::enable_if<std::is_trivial<U>::value &&
+                                        std::is_same<U, value_type>::value,
+                                    bool>::type = true>
+  void copy_in_front(U const* data, size_type count) {
+    assert(count <= remaining());
+    auto new_first = sub(first_, count);
+    copy_in(new_first, data, count);
+    size_ += count;
+    first_ = new_first;
+  }
+
+  template <typename U,
+            typename std::enable_if<std::is_trivial<U>::value &&
+                                        std::is_same<U, value_type>::value,
+                                    bool>::type = true>
+  void copy_in_back(U const* data, size_type count) {
+    assert(count <= remaining());
+    copy_in(last_, data, count);
+    last_ = add(last_, count);
+    size_ += count;
+  }
+
+  template <typename U,
+            typename std::enable_if<std::is_trivial<U>::value &&
+                                        std::is_same<U, value_type>::value,
+                                    bool>::type = true>
+  void copy_out_front(U* data, size_type count) {
+    assert(count <= size());
+    copy_out(data, first_, count);
+    first_ = add(first_, count);
+    size_ -= count;
+  }
+
+  template <typename U,
+            typename std::enable_if<std::is_trivial<U>::value &&
+                                        std::is_same<U, value_type>::value,
+                                    bool>::type = true>
+  void copy_out_back(U* data, size_type count) {
+    assert(count <= size());
+    auto new_last = sub(last_, count);
+    copy_out(data, new_last, count);
+    size_ -= count;
+    last_ = new_last;
+  }
+
  private:
+  template <typename Func, typename SrcType>
+  void copy_in_impl(pointer dest, SrcType* src, size_type count,
+                    Func const& copy_fn) {
+    if (dest + count <= end_) {
+      copy_fn(dest, src, count);
+    } else {
+      size_type const count_a = std::distance(dest, end_);
+      size_type const count_b = count - count_a;
+      copy_fn(dest, src, count_a);
+      copy_fn(begin_, src + count_a, count_b);
+    }
+  }
+
+  template <typename Func>
+  void copy_out_impl(pointer dest, pointer src, size_type count,
+                     Func const& copy_fn) {
+    if (src + count <= end_) {
+      copy_fn(dest, src, count);
+    } else {
+      size_type const count_a = std::distance(src, end_);
+      size_type const count_b = count - count_a;
+      copy_fn(dest, src, count_a);
+      copy_fn(dest + count_a, begin_, count_b);
+    }
+  }
+
+  void copy_in(pointer dest, const_pointer src, size_type count) {
+    copy_in_impl(dest, src, count,
+                 [](pointer dest, const_pointer src, size_type count) {
+                   std::memcpy(dest, src, sizeof(*dest) * count);
+                 });
+  }
+
+  void copy_out(pointer dest, pointer src, size_type count) {
+    copy_out_impl(dest, src, count,
+                  [](pointer dest, pointer src, size_type count) {
+                    std::memcpy(dest, src, sizeof(*dest) * count);
+                  });
+  }
+
   template <typename U, typename std::enable_if<std::is_trivial<U>::value,
                                                 bool>::type = true>
   void clear_impl() {

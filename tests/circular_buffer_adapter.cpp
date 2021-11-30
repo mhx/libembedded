@@ -864,6 +864,211 @@ TEST(circular_buffer_adapter, const_iterator) {
   }
 }
 
+template <typename T>
+class copy_in_out_fixture : public ::testing::Test {};
+
+using copy_in_out_types = ::testing::Types<uint8_t, int16_t, int32_t>;
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
+#endif
+
+TYPED_TEST_SUITE(copy_in_out_fixture, copy_in_out_types);
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
+TYPED_TEST(copy_in_out_fixture, copy_in_out) {
+  std::vector<TypeParam> raw(10);
+  embedded::circular_buffer_adapter<TypeParam> cba(raw.data(), raw.size());
+
+  EXPECT_TRUE(cba.empty());
+
+  std::vector<TypeParam> in;
+
+  cba.copy_in_back(in.data(), in.size());
+
+  EXPECT_TRUE(cba.empty());
+
+  cba.copy_in_front(in.data(), in.size());
+
+  EXPECT_TRUE(cba.empty());
+
+  in.emplace_back(1);
+
+  cba.copy_in_back(in.data(), in.size());
+
+  //  1
+  // --  --  --  --  --  --  --  --  --  --
+  // b
+  //     e
+
+  EXPECT_FALSE(cba.empty());
+  EXPECT_EQ(1, cba.size());
+
+  in[0] = 2;
+
+  cba.copy_in_front(in.data(), in.size());
+
+  //  1                                   2
+  // --  --  --  --  --  --  --  --  --  --
+  //                                     b
+  //     e
+
+  EXPECT_EQ(2, cba.size());
+  EXPECT_EQ(2, cba.front());
+  EXPECT_EQ(1, cba.back());
+
+  in.resize(5);
+  std::iota(in.begin(), in.end(), 3);
+
+  cba.copy_in_back(in.data(), in.size());
+
+  //  1   3   4   5   6   7               2
+  // --  --  --  --  --  --  --  --  --  --
+  //                                     b
+  //                         e
+
+  EXPECT_EQ(7, cba.size());
+
+  in.resize(3);
+  std::iota(in.begin(), in.end(), 8);
+
+  cba.copy_in_front(in.data(), in.size());
+
+  //  1   3   4   5   6   7   8   9  10   2
+  // --  --  --  --  --  --  --  --  --  --
+  //                         b
+  //                         e
+
+  EXPECT_TRUE(cba.full());
+  EXPECT_EQ(10, cba.size());
+
+  std::vector<TypeParam> out;
+
+  cba.copy_out_front(out.data(), out.size());
+
+  EXPECT_TRUE(cba.full());
+
+  cba.copy_out_back(out.data(), out.size());
+
+  EXPECT_TRUE(cba.full());
+
+  out.resize(1);
+
+  cba.copy_out_front(out.data(), out.size());
+
+  //  1   3   4   5   6   7       9  10   2
+  // --  --  --  --  --  --  --  --  --  --
+  //                             b
+  //                         e
+
+  EXPECT_FALSE(cba.full());
+  EXPECT_EQ(9, cba.size());
+  EXPECT_EQ(8, out[0]);
+
+  cba.copy_out_back(out.data(), out.size());
+
+  //  1   3   4   5   6           9  10   2
+  // --  --  --  --  --  --  --  --  --  --
+  //                             b
+  //                     e
+
+  EXPECT_EQ(8, cba.size());
+  EXPECT_EQ(7, out[0]);
+
+  out.resize(4);
+
+  cba.copy_out_front(out.data(), out.size());
+
+  //      3   4   5   6
+  // --  --  --  --  --  --  --  --  --  --
+  //     b
+  //                     e
+
+  EXPECT_EQ(4, cba.size());
+  EXPECT_EQ(std::vector<TypeParam>({9, 10, 2, 1}), out);
+
+  out.resize(3);
+
+  cba.copy_out_back(out.data(), out.size());
+
+  //      3
+  // --  --  --  --  --  --  --  --  --  --
+  //     b
+  //         e
+
+  EXPECT_EQ(1, cba.size());
+  EXPECT_EQ(std::vector<TypeParam>({4, 5, 6}), out);
+
+  in.resize(4);
+  std::iota(in.begin(), in.end(), 11);
+
+  cba.copy_in_front(in.data(), in.size());
+
+  // 14   3                      11  12  13
+  // --  --  --  --  --  --  --  --  --  --
+  //                             b
+  //         e
+
+  EXPECT_EQ(5, cba.size());
+
+  out.resize(5);
+
+  cba.copy_out_back(out.data(), out.size());
+
+  //
+  // --  --  --  --  --  --  --  --  --  --
+  //                             b
+  //                             e
+
+  EXPECT_TRUE(cba.empty());
+  EXPECT_EQ(std::vector<TypeParam>({11, 12, 13, 14, 3}), out);
+
+  std::iota(in.begin(), in.end(), 15);
+
+  cba.copy_in_back(in.data(), in.size());
+
+  // 18                          15  16  17
+  // --  --  --  --  --  --  --  --  --  --
+  //                             b
+  //     e
+
+  EXPECT_EQ(4, cba.size());
+
+  out.resize(1);
+  cba.copy_out_back(out.data(), out.size());
+
+  //                             15  16  17
+  // --  --  --  --  --  --  --  --  --  --
+  //                             b
+  // e
+
+  EXPECT_EQ(3, cba.size());
+  EXPECT_EQ(std::vector<TypeParam>({18}), out);
+
+  std::iota(in.begin(), in.end(), 19);
+
+  cba.copy_in_back(in.data(), in.size());
+
+  // 19  20  21  22              15  16  17
+  // --  --  --  --  --  --  --  --  --  --
+  //                             b
+  //                 e
+
+  out.resize(3);
+  cba.copy_out_front(out.data(), out.size());
+
+  EXPECT_EQ(4, cba.size());
+  EXPECT_EQ(std::vector<TypeParam>({15, 16, 17}), out);
+
+  EXPECT_EQ(0, cba.raw_index(cba.begin()));
+  EXPECT_EQ(4, cba.raw_index(cba.end()));
+}
+
 #if LIBEMB_HAS_EXCEPTIONS
 TEST(circular_buffer_adapter, exceptions) {
   std::vector<uint8_t> raw(4);
