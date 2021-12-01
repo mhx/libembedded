@@ -303,7 +303,7 @@ class circular_buffer_adapter {
 
  private:
   template <typename Func>
-  void copy_in_impl(pointer dest, const_pointer src, size_type count,
+  void copy_in_impl(pointer dest, value_type const* src, size_type count,
                     Func const& copy_fn) {
     if (dest + count <= end_) {
       copy_fn(dest, src, count);
@@ -316,7 +316,7 @@ class circular_buffer_adapter {
   }
 
   template <typename Func>
-  void copy_out_impl(pointer dest, const_pointer src, size_type count,
+  void copy_out_impl(value_type* dest, const_pointer src, size_type count,
                      Func const& copy_fn) const {
     if (src + count <= end_) {
       copy_fn(dest, src, count);
@@ -329,16 +329,16 @@ class circular_buffer_adapter {
     }
   }
 
-  void copy_in(pointer dest, const_pointer src, size_type count) {
+  void copy_in(pointer dest, value_type const* src, size_type count) {
     copy_in_impl(dest, src, count,
-                 [](pointer dest, const_pointer src, size_type count) {
+                 [](pointer dest, value_type const* src, size_type count) {
                    std::memcpy(dest, src, sizeof(*dest) * count);
                  });
   }
 
-  void copy_out(pointer dest, const_pointer src, size_type count) const {
+  void copy_out(value_type* dest, const_pointer src, size_type count) const {
     copy_out_impl(dest, src, count,
-                  [](pointer dest, const_pointer src, size_type count) {
+                  [](value_type* dest, const_pointer src, size_type count) {
                     std::memcpy(dest, src, sizeof(*dest) * count);
                   });
   }

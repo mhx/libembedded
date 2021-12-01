@@ -1115,6 +1115,17 @@ TYPED_TEST(copy_in_out_fixture, copy_in_out) {
   EXPECT_EQ(7, cba.size());
   EXPECT_EQ(std::vector<TypeParam>({15, 16, 17, 19, 20, 21, 22}), out);
 
+  {
+    embedded::circular_buffer_adapter<TypeParam const> ccba(
+        raw.data(), raw.size(), cba.raw_index(cba.begin()), cba.size());
+
+    std::fill(out.begin(), out.end(), 0);
+    ccba.copy_out(ccba.begin(), ccba.end(), out.data());
+
+    EXPECT_EQ(7, ccba.size());
+    EXPECT_EQ(std::vector<TypeParam>({15, 16, 17, 19, 20, 21, 22}), out);
+  }
+
   in.resize(4);
   std::iota(in.begin(), in.end(), 23);
 
