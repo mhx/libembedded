@@ -23,6 +23,7 @@
 #pragma once
 
 #include <cstdint>
+#include <iterator>
 #include <type_traits>
 
 namespace embedded {
@@ -93,19 +94,7 @@ class varint {
                                uint8_t>::value,
                   "varint can only be encoded to uint8_t iterators");
 
-    auto it = begin;
-
-    while (it != end && value >= 128) {
-      *it++ = 0x80 | (value & 0x7f);
-      value >>= 7;
-    }
-
-    if (it != end) {
-      *it++ = static_cast<uint8_t>(value);
-      return it;
-    }
-
-    return begin;
+    return encode_impl(value, begin, [end](It it) { return it != end; });
   }
 
   // signed integer version
@@ -114,6 +103,64 @@ class varint {
       typename std::enable_if<std::is_signed<T>::value, bool>::type = true>
   static It encode(T value, It begin, It end) {
     return encode(zig_zag_encode(value), begin, end);
+  }
+
+  /**
+   * Encode an integer value (without range check)
+   *
+   * \param value    The integer value to encode.
+   *
+   * \param begin    Iterator to start of encoding buffer.
+   *
+   * \returns Iterator to end of encoding.
+   */
+  template <
+      typename T, typename It,
+      typename std::enable_if<std::is_unsigned<T>::value, bool>::type = true>
+  static It encode(T value, It begin) {
+    static_assert(std::is_same<typename std::decay<decltype(*begin)>::type,
+                               uint8_t>::value,
+                  "varint can only be encoded to uint8_t iterators");
+
+    return encode_impl(value, begin, [](It) { return true; });
+  }
+
+  // signed integer version
+  template <
+      typename T, typename It,
+      typename std::enable_if<std::is_signed<T>::value, bool>::type = true>
+  static It encode(T value, It begin) {
+    return encode(zig_zag_encode(value), begin);
+  }
+
+  /**
+   * Encode an integer value (with back insert iterator)
+   *
+   * \param value    The integer value to encode.
+   *
+   * \param begin    Iterator to start of encoding buffer.
+   *
+   * \returns Iterator to end of encoding.
+   */
+  template <
+      typename T, typename Container,
+      typename std::enable_if<std::is_unsigned<T>::value, bool>::type = true>
+  static void encode(T value, std::back_insert_iterator<Container> begin) {
+    static_assert(
+        std::is_same<typename std::decay<typename Container::value_type>::type,
+                     uint8_t>::value,
+        "varint can only be encoded to uint8_t iterators");
+
+    encode_impl(value, begin,
+                [](std::back_insert_iterator<Container>) { return true; });
+  }
+
+  // signed integer version
+  template <
+      typename T, typename Container,
+      typename std::enable_if<std::is_signed<T>::value, bool>::type = true>
+  static void encode(T value, std::back_insert_iterator<Container> begin) {
+    encode(zig_zag_encode(value), begin);
   }
 
   /**
@@ -194,6 +241,26 @@ class varint {
       typename S = typename std::make_signed<T>::type>
   static constexpr S zig_zag_decode(T value) {
     return static_cast<S>((value >> 1) ^ -(value & 1));
+  }
+
+ private:
+  template <
+      typename T, typename It, typename CheckFunc,
+      typename std::enable_if<std::is_unsigned<T>::value, bool>::type = true>
+  static It encode_impl(T value, It begin, CheckFunc const& check_iter) {
+    auto it = begin;
+
+    while (check_iter(it) && value >= 128) {
+      *it++ = 0x80 | (value & 0x7f);
+      value >>= 7;
+    }
+
+    if (check_iter(it)) {
+      *it++ = static_cast<uint8_t>(value);
+      return it;
+    }
+
+    return begin;
   }
 };
 

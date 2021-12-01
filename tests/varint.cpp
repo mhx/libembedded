@@ -189,6 +189,33 @@ TYPED_TEST_P(varint_test, encode_decode) {
       EXPECT_TRUE(it == buf.end());
       EXPECT_EQ(v, out);
     }
+
+    buf.clear();
+
+    varint::encode(v, std::back_inserter(buf));
+
+    EXPECT_EQ(varint::size(v), buf.size());
+
+    {
+      TypeParam out;
+      auto it = varint::decode(out, buf.begin(), buf.end());
+      EXPECT_TRUE(it == buf.end());
+      EXPECT_EQ(v, out);
+    }
+
+    std::fill(buf.begin(), buf.end(), 0);
+
+    {
+      auto it = varint::encode(v, buf.begin());
+      EXPECT_TRUE(it == buf.end());
+    }
+
+    {
+      TypeParam out;
+      auto it = varint::decode(out, buf.begin(), buf.end());
+      EXPECT_TRUE(it == buf.end());
+      EXPECT_EQ(v, out);
+    }
   }
 }
 
