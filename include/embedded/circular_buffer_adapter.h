@@ -98,6 +98,8 @@ class circular_buffer_adapter {
       , first_{first}
       , last_{add(first, item_count)}
       , size_{item_count} {
+    assert(begin <= first);
+    assert(first <= end);
     assert(size_ <= capacity());
   }
 
