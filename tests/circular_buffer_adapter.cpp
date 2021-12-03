@@ -809,6 +809,11 @@ TEST(circular_buffer_adapter, const_iterator) {
     EXPECT_FALSE(it > cba.cbegin());
 
     EXPECT_FALSE(it == cba.end());
+    EXPECT_TRUE(it != cba.end());
+    EXPECT_TRUE(it < cba.end());
+    EXPECT_TRUE(it <= cba.end());
+    EXPECT_FALSE(it > cba.end());
+    EXPECT_FALSE(it >= cba.end());
   }
 
   {
@@ -833,37 +838,6 @@ TEST(circular_buffer_adapter, const_iterator) {
     EXPECT_TRUE(it >= cba.cend());
     EXPECT_FALSE(it < cba.cend());
     EXPECT_FALSE(it > cba.cend());
-
-    EXPECT_FALSE(it == cba.begin());
-  }
-
-  {
-    auto it = cba.begin();
-
-    EXPECT_TRUE(it == cba.begin());
-    EXPECT_FALSE(it != cba.begin());
-    EXPECT_TRUE(it <= cba.begin());
-    EXPECT_TRUE(it >= cba.begin());
-    EXPECT_FALSE(it < cba.begin());
-    EXPECT_FALSE(it > cba.begin());
-
-    EXPECT_FALSE(it == cba.end());
-    EXPECT_TRUE(it != cba.end());
-    EXPECT_TRUE(it < cba.end());
-    EXPECT_TRUE(it <= cba.end());
-    EXPECT_FALSE(it > cba.end());
-    EXPECT_FALSE(it >= cba.end());
-  }
-
-  {
-    auto it = cba.end();
-
-    EXPECT_TRUE(it == cba.end());
-    EXPECT_FALSE(it != cba.end());
-    EXPECT_TRUE(it <= cba.end());
-    EXPECT_TRUE(it >= cba.end());
-    EXPECT_FALSE(it < cba.end());
-    EXPECT_FALSE(it > cba.end());
 
     EXPECT_FALSE(it == cba.begin());
     EXPECT_TRUE(it != cba.begin());
