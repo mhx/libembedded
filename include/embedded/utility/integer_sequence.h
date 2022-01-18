@@ -22,5 +22,38 @@
 
 #pragma once
 
-#include "type_traits/conjunction.h"
-#include "type_traits/is_invocable.h"
+#include <cstddef>
+
+namespace embedded {
+
+template <typename T, T... Ints>
+struct integer_sequence {
+  using value_type = T;
+  static constexpr std::size_t size() { return sizeof...(Ints); }
+};
+
+template <std::size_t... Ints>
+using index_sequence = integer_sequence<std::size_t, Ints...>;
+
+template <typename T, std::size_t N, T... Is>
+struct make_integer_sequence : make_integer_sequence<T, N - 1, N - 1, Is...> {};
+
+template <typename T, T... Is>
+struct make_integer_sequence<T, 0, Is...> : integer_sequence<T, Is...> {};
+
+template <typename T, T B, T E, T... Is>
+struct make_integer_range : make_integer_range<T, B, E - 1, E - 1, Is...> {};
+
+template <typename T, T B, T... Is>
+struct make_integer_range<T, B, B, Is...> : integer_sequence<T, Is...> {};
+
+template <std::size_t N>
+using make_index_sequence = make_integer_sequence<std::size_t, N>;
+
+template <std::size_t B, std::size_t E>
+using make_index_range = make_integer_range<std::size_t, B, E>;
+
+template <typename... T>
+using index_sequence_for = make_index_sequence<sizeof...(T)>;
+
+} // namespace embedded

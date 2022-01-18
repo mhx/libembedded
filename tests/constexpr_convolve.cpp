@@ -20,7 +20,25 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#pragma once
+#include "embedded/constexpr_math/convolve.h"
+#include "embedded/constexpr_math/vector.h"
 
-#include "type_traits/conjunction.h"
-#include "type_traits/is_invocable.h"
+#include <gtest/gtest.h>
+
+#include "test_util.h"
+
+using namespace embedded;
+using namespace embedded::test;
+
+TEST(constexpr_convolve, basic) {
+  constexpr cmath::vector<double, 3> a{1.0, 2.0, 3.0};
+  constexpr cmath::vector<double, 3> b{0.0, 1.0, 0.5};
+  constexpr auto c = convolve_full(a, b);
+
+  static_assert(c.size() == 5, "size");
+  static_assert(c[0] == 0.0, "conv");
+  static_assert(almost_equal(c[1], 1.0), "conv");
+  static_assert(almost_equal(c[2], 2.5), "conv");
+  static_assert(almost_equal(c[3], 4.0), "conv");
+  static_assert(almost_equal(c[4], 1.5), "conv");
+}

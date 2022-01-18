@@ -20,7 +20,16 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#pragma once
+#include <limits>
 
-#include "type_traits/conjunction.h"
-#include "type_traits/is_invocable.h"
+namespace embedded {
+namespace test {
+
+template <typename F>
+constexpr bool almost_equal(F a, F b, F max_error = F{100}) noexcept {
+  return (a < b ? b - a : a - b) / (b < 0 ? -b : b) <
+         max_error * std::numeric_limits<F>::epsilon();
+}
+
+} // namespace test
+} // namespace embedded

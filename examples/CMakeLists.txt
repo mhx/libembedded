@@ -20,32 +20,5 @@
 # DEALINGS IN THE SOFTWARE.
 #
 
-project(libembedded)
-
-cmake_minimum_required(VERSION 3.13.4)
-
-option(WITH_EXAMPLES "build examples" OFF)
-
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-   add_compile_options(-fdiagnostics-color=always)
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-   add_compile_options(-fcolor-diagnostics)
-endif()
-
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  add_compile_options(-Wall -Wextra -pedantic -Werror)
-endif()
-
-if(DEFINED ENV{SOAKING})
-  message("\n======= ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS} [${CMAKE_BUILD_TYPE}] =======\n")
-endif()
-
-include_directories(include)
-
-enable_testing()
-
-if(WITH_EXAMPLES)
-  add_subdirectory(examples)
-endif()
-
-add_subdirectory(tests)
+add_executable(filter filter.cpp)
+add_executable(filter_fixed_point filter_fixed_point.cpp)

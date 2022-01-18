@@ -20,7 +20,23 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#pragma once
+#include "embedded/constexpr_math/complex.h"
 
-#include "type_traits/conjunction.h"
-#include "type_traits/is_invocable.h"
+#include <gtest/gtest.h>
+
+#include "test_util.h"
+
+using namespace embedded;
+using namespace embedded::test;
+
+TEST(constexpr_complex, basic) {
+  static_assert(cmath::complex<double>(-2.0).is_real(), "is_real");
+  static_assert(!cmath::complex<double>(-2.0, -1e-10).is_real(), "is_real");
+  static_assert(almost_equal(cmath::complex<double>(-2.0).norm(), 4.0), "norm");
+  static_assert(almost_equal(cmath::complex<double>(-2.0).abs(), 2.0), "norm");
+  static_assert(almost_equal(cmath::complex<double>(-2.0, 2.0).norm(), 8.0),
+                "norm");
+  static_assert(cmath::complex<double>(-2.0, 1.0).conj() ==
+                    cmath::complex<double>(-2.0, -1.0),
+                "conj");
+}

@@ -22,5 +22,18 @@
 
 #pragma once
 
-#include "type_traits/conjunction.h"
-#include "type_traits/is_invocable.h"
+#include <type_traits>
+
+namespace embedded {
+
+template <typename...>
+struct conjunction : std::true_type {};
+
+template <typename T>
+struct conjunction<T> : T {};
+
+template <typename T1, typename... Tn>
+struct conjunction<T1, Tn...>
+    : std::conditional<bool(T1::value), conjunction<Tn...>, T1>::type {};
+
+} // namespace embedded

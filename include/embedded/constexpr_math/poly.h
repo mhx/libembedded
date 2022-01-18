@@ -22,5 +22,42 @@
 
 #pragma once
 
-#include "type_traits/conjunction.h"
-#include "type_traits/is_invocable.h"
+#include <cstddef>
+
+#include "convolve.h"
+
+namespace embedded {
+namespace cmath {
+
+namespace detail {
+
+template <std::size_t N>
+struct poly_rec {
+  template <typename T, std::size_t S1, std::size_t S2>
+  constexpr auto
+  operator()(vector<T, S1> const& a, vector<T, S2> const& zeros) const noexcept
+      -> vector<T, S1 + N> {
+    return convolve_full(poly_rec<N - 1>()(a, zeros),
+                         vector<T, 2>{T{1}, -zeros[N - 1]});
+  }
+};
+
+template <>
+struct poly_rec<0> {
+  template <typename T, std::size_t S1, std::size_t S2>
+  constexpr auto
+  operator()(vector<T, S1> const& a,
+             vector<T, S2> const& /*zeros*/) const noexcept -> vector<T, S1> {
+    return a;
+  }
+};
+
+} // namespace detail
+
+template <typename T, std::size_t S>
+constexpr auto poly(vector<T, S> const& zeros) noexcept -> vector<T, S + 1> {
+  return detail::poly_rec<S>()(vector<T, 1>{T{1}}, zeros);
+}
+
+} // namespace cmath
+} // namespace embedded

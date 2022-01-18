@@ -22,5 +22,13 @@
 
 #pragma once
 
-#include "type_traits/conjunction.h"
-#include "type_traits/is_invocable.h"
+namespace embedded {
+namespace cmath {
+
+template <typename T>
+constexpr T pi() noexcept {
+  return T{3.1415926535897932384626433832795028841971l};
+}
+
+} // namespace cmath
+} // namespace embedded
