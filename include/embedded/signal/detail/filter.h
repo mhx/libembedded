@@ -299,10 +299,19 @@ class zpk_to_sos {
   operator()(carray<2 * Stages> const& z, carray<2 * Stages> const& p,
              value_type gain, bool distribute_gain) const noexcept
       -> sos_array<Stages> {
-    return step0(next_pole_index(p), z, p, gain, distribute_gain);
+    return step0(next_pole_index(p), z, p, check_gain(gain), distribute_gain);
   }
 
  private:
+  static constexpr value_type check_gain(value_type gain) noexcept {
+    // Protect against zero gain by forcing division-by-zero.
+    // This can happen with buggy gcem when trying to take the log() of a
+    // very small number. We can't use static_assert() here as the gain
+    // *could* be passed in as a run-time argument. If this is evaluated
+    // at compile time, the compile will typically fail.
+    return gain != value_type{0} ? gain : value_type{1} / gain;
+  }
+
   constexpr auto
   step0(std::size_t p1, carray<2 * Stages> const& z,
         carray<2 * Stages> const& p, value_type gain,
