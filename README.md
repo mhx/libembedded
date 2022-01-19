@@ -71,18 +71,18 @@ filter:
 
 ```
 process():
-        push    {r3, lr}
+        push            {r3, lr}
         vpush.64        {d8, d9, d10}
-        vldr.32 s17, .L5
-        vldr.32 s20, .L5+4
-        vldr.32 s19, .L5+8
+        vldr.32         s17, .L5
+        vldr.32         s20, .L5+4
+        vldr.32         s19, .L5+8
         vmov.f32        s16, s17
-        vldr.32 s18, .L5+12
+        vldr.32         s18, .L5+12
 .L2:
-        bl      input()
+        bl              input()
         vmul.f32        s13, s0, s20
         vmov.f32        s15, s0
-        vldr.32 s12, .L5+16
+        vldr.32         s12, .L5+16
         vadd.f32        s14, s16, s13
         vmul.f32        s16, s14, s18
         vmls.f32        s13, s14, s12
@@ -90,8 +90,8 @@ process():
         vnmls.f32       s16, s15, s19
         vadd.f32        s16, s16, s17
         vmov.f32        s17, s13
-        bl      output(float)
-        b       .L2
+        bl              output(float)
+        b               .L2
 .L5:
         .word   0
         .word   1005574271
@@ -102,7 +102,7 @@ process():
 
 The library is also able to build fixed-point arithmetic filters
 if a suitable fixed-point implementation is provided
-(e.g. [fpm](https://github.com/MikeLankamp/fpm).
+(e.g. [fpm](https://github.com/MikeLankamp/fpm)).
 
 You can find examples in the `examples` directory of the repo.
 
