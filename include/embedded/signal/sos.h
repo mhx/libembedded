@@ -27,13 +27,6 @@
 
 #include "detail/filter.h"
 
-// TODO:
-// - cleanup
-// - return more properties from filter spec (frequency, sample rate, ...)
-// - documentation :-)
-// - bandpass, bandstop
-// - elliptic and bessel filters
-// - filter combinations (likely by simply joining poles/zeros)
 // clang-format off
 #ifdef __IAR_SYSTEMS_ICC__
 #pragma diag_suppress=Pe540
