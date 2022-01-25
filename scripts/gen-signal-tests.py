@@ -30,7 +30,14 @@ STATIC = True
 IMPULSE_LEN = 1024
 
 
-def file_header(fh, fptype):
+def file_header(fh, fptype, ftype):
+    hmap = {
+        "bessel": "bessel.h",
+        "butter": "butterworth.h",
+        "cheby1": "chebyshev.h",
+        "cheby2": "chebyshev.h",
+    }
+    header = hmap[ftype]
     eps = 1e-7 if fptype == "float" else 1e-13
     fh.write(
         dedent(
@@ -59,12 +66,11 @@ def file_header(fh, fptype):
     #include <array>
     #include <vector>
 
-    #include "embedded/signal/butterworth.h"
-    #include "embedded/signal/chebyshev.h"
+    #include "embedded/signal/{header}"
     #include "embedded/signal/filter.h"
 
-    #include <gtest/gtest.h>
     #include <gmock/gmock.h>
+    #include <gtest/gtest.h>
 
     using namespace embedded::signal;
 
@@ -77,17 +83,19 @@ def file_header(fh, fptype):
 
     template <typename T>
     std::vector<typename T::value_type> impulse_response(T& filter, size_t len) {{
-        typename T::value_type x{{1}};
-        std::vector<typename T::value_type> y;
-        y.resize(len);
-        for (size_t i = 0; i < len; ++i) {{
-            y[i] = filter(x);
-            x = 0;
-        }}
-        return y;
+      typename T::value_type x{{1}};
+      std::vector<typename T::value_type> y;
+      y.resize(len);
+      for (size_t i = 0; i < len; ++i) {{
+        y[i] = filter(x);
+        x = 0;
+      }}
+      return y;
     }}
 
-    }}
+    }} // namespace
+
+    // clang-format off
     """
         )
     )
@@ -103,11 +111,13 @@ def test_base_name(fptype, order, freq, btype, ftype, args, fs):
 
 def base_design(fptype, order, freq, btype, ftype, args, fs):
     fmap = {
+        "bessel": "bessel",
         "butter": "butterworth",
         "cheby1": "chebyshev1",
         "cheby2": "chebyshev2",
     }
     amap = {
+        "bessel": lambda _: "",
         "butter": lambda _: "",
         "cheby1": lambda x: str(x["rp"]),
         "cheby2": lambda x: str(x["rs"]),
@@ -246,6 +256,7 @@ def generate_test_sos(fh, fptype, order, freq, btype, ftype, fs, sos):
 
 
 ftypes = [
+    ["bessel", [{}]],
     ["butter", [{}]],
     ["cheby1", [{"rp": 0.5}, {"rp": 3.0}]],
     ["cheby2", [{"rs": 20.0}, {"rs": 80.0}]],
@@ -259,7 +270,7 @@ for ftype in ftypes:
         filename = os.path.join(dirname, f"../tests/signal_{ftype[0]}_{fptype}.cpp")
         with open(filename, "w") as fh:
             print(f"writing {filename}...")
-            file_header(fh, fptype)
+            file_header(fh, fptype, ftype[0])
             for args in ftype[1]:
                 for btype in ["lowpass", "highpass"]:
                     for order in [1, 2, 3, 4, 5, 9, 48]:

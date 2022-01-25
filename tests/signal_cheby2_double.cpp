@@ -23,12 +23,11 @@
 #include <array>
 #include <vector>
 
-#include "embedded/signal/butterworth.h"
 #include "embedded/signal/chebyshev.h"
 #include "embedded/signal/filter.h"
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 using namespace embedded::signal;
 
@@ -41,17 +40,19 @@ constexpr bool almost_equal(F1 a, F2 b) noexcept {
 
 template <typename T>
 std::vector<typename T::value_type> impulse_response(T& filter, size_t len) {
-    typename T::value_type x{1};
-    std::vector<typename T::value_type> y;
-    y.resize(len);
-    for (size_t i = 0; i < len; ++i) {
-        y[i] = filter(x);
-        x = 0;
-    }
-    return y;
+  typename T::value_type x{1};
+  std::vector<typename T::value_type> y;
+  y.resize(len);
+  for (size_t i = 0; i < len; ++i) {
+    y[i] = filter(x);
+    x = 0;
+  }
+  return y;
 }
 
-}
+} // namespace
+
+// clang-format off
 
 TEST(signal_generated, cheby2_lowpass_1_40_1000_rs_20_0_double) {
   constexpr auto base_design = iirfilter<double>(1000).lowpass(chebyshev2<1>(20.0), 40);

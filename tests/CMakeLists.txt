@@ -63,9 +63,11 @@ add_executable(
   integer_sequence.cpp
   move_wrapper.cpp
   lock_guard.cpp
+  signal_bessel_double.cpp
   signal_butter_double.cpp
   signal_cheby1_double.cpp
   signal_cheby2_double.cpp
+  signal_bessel_float.cpp
   signal_butter_float.cpp
   signal_cheby1_float.cpp
   signal_cheby2_float.cpp
