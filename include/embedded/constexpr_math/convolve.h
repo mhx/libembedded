@@ -41,8 +41,8 @@ namespace detail {
 template <typename T, std::size_t S1, std::size_t S2, typename I>
 constexpr auto convolve_single(vector<T, S1> const& a, vector<T, S2> const& b,
                                I n, I m = 0) noexcept -> T {
-  return (m >= 0 && m < I(a.size()) ? a[m] : T{}) *
-             (n - m >= 0 && n - m < I(b.size()) ? b[n - m] : T{}) +
+  return (m < I(a.size()) ? a[m] : T{}) *
+             (n >= m && n < I(b.size()) + m ? b[n - m] : T{}) +
          (m < n ? convolve_single(a, b, n, m + 1) : T{});
 }
 
