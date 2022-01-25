@@ -87,7 +87,19 @@ using ::std::trunc;
 // #define GCEM_TAN_MAX_ITER (2*35)
 // #define GCEM_TANH_MAX_ITER (2*35)
 
+// clang-format off
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_suppress=Pe540
+#endif
+// clang-format on
+
 #include <gcem.hpp>
+
+// clang-format off
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_default=Pe540
+#endif
+// clang-format on
 
 namespace embedded {
 namespace cmath {

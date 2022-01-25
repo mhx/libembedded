@@ -26,6 +26,12 @@
 
 #include "functions.h"
 
+// clang-format off
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_suppress=Pe540
+#endif
+// clang-format on
+
 namespace embedded {
 namespace cmath {
 
@@ -201,3 +207,9 @@ abs(vector<complex<T>, Size> const& a) noexcept -> vector<T, Size> {
 
 } // namespace cmath
 } // namespace embedded
+
+// clang-format off
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_default=Pe540
+#endif
+// clang-format on

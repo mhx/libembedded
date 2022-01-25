@@ -34,6 +34,11 @@
 // - bandpass, bandstop
 // - elliptic and bessel filters
 // - filter combinations (likely by simply joining poles/zeros)
+// clang-format off
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_suppress=Pe540
+#endif
+// clang-format on
 
 namespace embedded {
 namespace signal {
@@ -155,3 +160,9 @@ class sos_instance {
 
 } // namespace signal
 } // namespace embedded
+
+// clang-format off
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_default=Pe540
+#endif
+// clang-format on

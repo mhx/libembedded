@@ -27,6 +27,12 @@
 #include "../utility/integer_sequence.h"
 #include "vector.h"
 
+// clang-format off
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_suppress=Pe540
+#endif
+// clang-format on
+
 namespace embedded {
 namespace cmath {
 
@@ -58,3 +64,9 @@ convolve_full(vector<T, S1> const& a, vector<T, S2> const& b) noexcept
 
 } // namespace cmath
 } // namespace embedded
+
+// clang-format off
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_default=Pe540
+#endif
+// clang-format on

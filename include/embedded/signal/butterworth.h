@@ -26,6 +26,12 @@
 
 #include "detail/filter.h"
 
+// clang-format off
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_suppress=Pe540
+#endif
+// clang-format on
+
 namespace embedded {
 namespace signal {
 
@@ -68,3 +74,9 @@ class butterworth {
 
 } // namespace signal
 } // namespace embedded
+
+// clang-format off
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_default=Pe540
+#endif
+// clang-format on

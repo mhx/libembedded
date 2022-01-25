@@ -28,6 +28,12 @@
 #include "../type_traits/conjunction.h"
 #include "../utility/integer_sequence.h"
 
+// clang-format off
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_suppress=Pe540
+#endif
+// clang-format on
+
 namespace embedded {
 namespace cmath {
 
@@ -427,3 +433,9 @@ constexpr auto prod(cmath::vector<F, Size> const& a) noexcept -> F {
 
 } // namespace cmath
 } // namespace embedded
+
+// clang-format off
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_default=Pe540
+#endif
+// clang-format on

@@ -26,6 +26,12 @@
 
 #include "convolve.h"
 
+// clang-format off
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_suppress=Pe540
+#endif
+// clang-format on
+
 namespace embedded {
 namespace cmath {
 
@@ -61,3 +67,9 @@ constexpr auto poly(vector<T, S> const& zeros) noexcept -> vector<T, S + 1> {
 
 } // namespace cmath
 } // namespace embedded
+
+// clang-format off
+#ifdef __IAR_SYSTEMS_ICC__
+#pragma diag_default=Pe540
+#endif
+// clang-format on
