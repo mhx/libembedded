@@ -56,9 +56,7 @@ class sos_section {
   constexpr sos_section(cmath::vector<cmath::complex<F2>, 2> const& zeros,
                         cmath::vector<cmath::complex<F2>, 2> const& poles,
                         F2 gain) noexcept
-      : sos_section(gain, real(gain * poly(zeros)), real(poly(poles))) {}
-
-  const double gain_;
+      : sos_section(real(gain * poly(zeros)), real(poly(poles))) {}
 
   value_type filter(state_type& state, value_type x) const {
     value_type const y = b0_ * x + state.y1;
@@ -77,10 +75,9 @@ class sos_section {
 
  private:
   template <typename F2>
-  constexpr sos_section(F2 gain, cmath::vector<F2, 3> const& b,
+  constexpr sos_section(cmath::vector<F2, 3> const& b,
                         cmath::vector<F2, 3> const& a) noexcept
-      : gain_{gain}
-      , b0_{static_cast<value_type>(b[0])}
+      : b0_{static_cast<value_type>(b[0])}
       , b1_{static_cast<value_type>(b[1])}
       , b2_{static_cast<value_type>(b[2])}
       , a1_{static_cast<value_type>(a[1])}
