@@ -50,7 +50,7 @@ class poly_design {
       : b_{real(zpk.gain() * poly(zpk.zeros()))}
       , a_{real(poly(zpk.poles()))} {}
 
-  constexpr std::size_t order() const noexcept { return N; }
+  static constexpr std::size_t order() noexcept { return N; }
 
   constexpr auto b() const noexcept -> parray { return b_; }
   constexpr auto a() const noexcept -> parray { return a_; }
