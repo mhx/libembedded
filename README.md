@@ -1,3 +1,5 @@
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/5e1f58ea5d434b09bfba571413a02811)](https://www.codacy.com/gh/mhx/libembedded/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mhx/libembedded&amp;utm_campaign=Badge_Grade)
+
 # libembedded - Modern C++ for Embedded Systems
 
 This library will hopefully, over time, become a collection of useful,
