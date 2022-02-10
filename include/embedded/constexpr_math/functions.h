@@ -55,8 +55,22 @@ using ::std::log;
 using ::std::log10;
 using ::std::log1p;
 using ::std::log2;
+
+#if __cplusplus >= 201402L
 using ::std::max;
 using ::std::min;
+#else
+template <class T>
+static constexpr const T& min(const T& a, const T& b) {
+  return a < b ? a : b;
+}
+
+template <class T>
+static constexpr const T& max(const T& a, const T& b) {
+  return a < b ? b : a;
+}
+#endif
+
 using ::std::pow;
 using ::std::round;
 using ::std::signbit;
