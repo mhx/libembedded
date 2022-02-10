@@ -24,27 +24,33 @@ def parse(data):
     soscoef = ["b0", "b1", "b2", "a1", "a2"]
 
     while len(data) > 0:
-        magic, size, filttype, valtype, order, name = unpack("IHHHH116s", data[:128])
+        header_size = 128
+        magic, size, version, structure, valtype, name = unpack(
+            "IHBBB119s", data[:header_size]
+        )
         assert magic == 0x544C4946
-        data = data[128:]
+        assert version == 0
+        size -= header_size
+        data = data[header_size:]
         valnum = size // valsizes[valtype]
         values = unpack(f"{valnum}{valtypes[valtype]}", data[:size])
         data = data[size:]
-        print(f"{name.decode('utf-8')}:")
+        name = name.rstrip(b"\0").decode("utf-8")
+        print(f"{name}:")
 
-        if filttype == 0:
+        if structure == 0:
             sosnum = valnum // 5
             for i in range(sosnum):
                 print(f"  SOS stage {i + 1}:")
                 for k in range(5):
                     print(f"    {soscoef[k]} = {values[5*i + k]}")
-        elif filttype == 1:
+        elif structure == 1:
             polynum = valnum // 2
             for k, coef in enumerate(["b", "a"]):
                 for i in range(polynum):
                     print(f"  {coef}[{i}] = {values[polynum*k + i]}")
         else:
-            raise RuntimeError("unsupported filter type: {filttype}")
+            raise RuntimeError("unsupported filter structure: {structure}")
 
         npos = data.find(b"FILT")
         if npos > 0:

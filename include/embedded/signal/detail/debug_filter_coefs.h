@@ -40,45 +40,65 @@ namespace embedded {
 namespace signal {
 namespace detail {
 
+enum class filter_debug_structure : uint8_t {
+  SOS = 0,
+  POLY = 1,
+};
+
+enum class filter_debug_value_type : uint8_t {
+  FLOAT = 0,
+  DOUBLE = 1,
+  LONG_DOUBLE = 2,
+};
+
 struct filter_debug_header {
   uint32_t magic{0x544C4946};
   uint16_t length;
-  uint16_t filttype;
-  uint16_t valtype;
-  uint16_t order;
-  char name[116];
+  uint8_t version{0};
+  filter_debug_structure structure;
+  filter_debug_value_type valtype;
+  char name[119];
 
   template <size_t S>
-  constexpr filter_debug_header(uint16_t length, uint8_t filttype,
-                                uint8_t valtype, uint8_t order,
+  constexpr filter_debug_header(uint16_t length,
+                                filter_debug_structure structure,
+                                filter_debug_value_type valtype,
                                 char const (&name)[S]) noexcept
       : filter_debug_header(
-            length, filttype, valtype, order, name,
+            length, structure, valtype, name,
             make_index_sequence<cmath::min(sizeof(name) - 1, S)>{}) {}
 
   template <size_t S, std::size_t... Ints>
-  constexpr filter_debug_header(uint16_t length_, uint8_t filttype_,
-                                uint8_t valtype_, uint8_t order_,
+  constexpr filter_debug_header(uint16_t length_,
+                                filter_debug_structure structure_,
+                                filter_debug_value_type valtype_,
                                 char const (&name_)[S],
                                 index_sequence<Ints...>) noexcept
       : length{length_}
-      , filttype{filttype_}
+      , structure{structure_}
       , valtype{valtype_}
-      , order{order_}
       , name{name_[Ints]...} {}
 };
 
+static_assert(sizeof(filter_debug_header) % 8 == 0,
+              "unexpected filter_debug_header size");
+
 template <typename T>
-struct filter_debug_value_type;
+struct filter_debug_value_type_of;
 
 template <>
-struct filter_debug_value_type<float> {
-  static constexpr uint8_t value{0};
+struct filter_debug_value_type_of<float> {
+  static constexpr auto value{filter_debug_value_type::FLOAT};
 };
 
 template <>
-struct filter_debug_value_type<double> {
-  static constexpr uint8_t value{1};
+struct filter_debug_value_type_of<double> {
+  static constexpr auto value{filter_debug_value_type::DOUBLE};
+};
+
+template <>
+struct filter_debug_value_type_of<long double> {
+  static constexpr auto value{filter_debug_value_type::LONG_DOUBLE};
 };
 
 template <typename T>
@@ -87,22 +107,24 @@ struct filter_design_debug;
 template <typename F, std::size_t N>
 struct filter_design_debug<::embedded::signal::sos_design<F, N>> {
   using Design = ::embedded::signal::sos_design<F, N>;
-  static constexpr uint16_t size = sizeof(typename Design::sos_array);
+  static constexpr uint16_t size =
+      sizeof(filter_debug_header) + sizeof(typename Design::sos_array);
 
   filter_debug_header header;
   typename Design::sos_array coef;
 
   template <size_t S>
   constexpr filter_design_debug(Design const& d, char const (&name)[S]) noexcept
-      : header{size, 0, filter_debug_value_type<F>::value, Design::order(),
-               name}
+      : header{size, filter_debug_structure::SOS,
+               filter_debug_value_type_of<F>::value, name}
       , coef{d.sos()} {}
 };
 
 template <typename F, std::size_t N>
 struct filter_design_debug<::embedded::signal::poly_design<F, N>> {
   using Design = ::embedded::signal::poly_design<F, N>;
-  static constexpr uint16_t size = 2 * sizeof(typename Design::parray);
+  static constexpr uint16_t size =
+      sizeof(filter_debug_header) + 2 * sizeof(typename Design::parray);
 
   filter_debug_header header;
   typename Design::parray b;
@@ -110,8 +132,8 @@ struct filter_design_debug<::embedded::signal::poly_design<F, N>> {
 
   template <size_t S>
   constexpr filter_design_debug(Design const& d, char const (&name)[S]) noexcept
-      : header{size, 1, filter_debug_value_type<F>::value, Design::order(),
-               name}
+      : header{size, filter_debug_structure::POLY,
+               filter_debug_value_type_of<F>::value, name}
       , b{d.b()}
       , a{d.a()} {}
 };
