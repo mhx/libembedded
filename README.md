@@ -36,11 +36,6 @@ that you can easily build circular buffers on top of EEPROM sections.
 and from byte streams, using as few bytes as possible, and independent of
 byte order.
 
-## Variant
-
-[A version of](https://github.com/mpark/variant) `std::variant` written by
-Michael Park back-ported to C++11 has been added to the library.
-
 ## Type traits
 
 A few type traits have been back-ported from later C++ standards. More

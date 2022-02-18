@@ -40,7 +40,7 @@ if(DEFINED ENV{SOAKING})
   message("\n======= ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_FLAGS} [${CMAKE_BUILD_TYPE}] =======\n")
 endif()
 
-include_directories(include)
+include_directories(include fpm/include gcem/include variant/include)
 
 enable_testing()
 

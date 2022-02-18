@@ -1,0 +1,9 @@
+[submodule "variant"]
+	path = variant
+	url = https://github.com/mpark/variant
+[submodule "gcem"]
+	path = gcem
+	url = https://github.com/kthohr/gcem
+[submodule "fpm"]
+	path = fpm
+	url = https://github.com/MikeLankamp/fpm
